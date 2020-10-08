@@ -1,0 +1,102 @@
+﻿@model IEnumerable<Albums.Models.Album>
+@{
+    ViewData["Title"] = "Albums";
+}
+
+<div class="container">
+    <div class="container" style="height:600px; overflow: hidden auto;">
+        <select id="selector">
+            <option> Seleccione un Album </option>
+        </select>
+        <button class="btn btn-primary" style="display:none" id="albumButton"> View Album</button>
+        <table class="table" id="albumTable" style="display:none;">
+        </table>
+    </div>
+    <div id="commentsDiv" style="display:none" class="panel panel-default widget" height="50%" ">
+        <div class="panel-heading">
+            <h3 class="panel-title">Comentarios</h3>
+        </div>
+        <div class="panel-body">
+            <div class="list-group" id="comments"></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var buttonAlbumVisible = false;
+    var albumId = null;
+    var album = null;
+    var comments = [];
+    var model = @Html.Raw(Json.Serialize(Model));
+    var selector = document.getElementById("selector");
+    var albumButton = document.getElementById("albumButton");
+    var albumTable = document.getElementById("albumTable");
+    var commentsDiv = document.getElementById("commentsDiv");
+    var commentsHtml = document.getElementById("comments")
+
+    model.forEach(item => {
+        var option = document.createElement('option');
+        option.value = item.id;
+        option.innerHTML = item.title;
+        selector.appendChild(option);
+    });
+
+    selector.onchange = function () {
+        buttonAlbumVisible = true;
+        albumId = this.value;
+        albumButton.style.display = "inline";
+    }
+
+    albumButton.onclick = function () {
+        album = model.find(album => album.id == albumId);
+        generateTableByAlbum(album);
+        albumTable.style.display = "table-row-group";
+        commentsDiv.style.display = "block";
+    }
+
+    function generateTableByAlbum(album) {
+        albumTable.innerHTML = "";
+        var albumHtmlString = album.photos.map(
+            photo => generatePhotoHtml(photo)
+        ).join('');
+        albumTable.innerHTML = albumHtmlString;
+    }
+
+    function fillCommentsSection(photoId) {
+        var photo = album.photos.find(photo => photo.id == photoId);
+        var commentsHtmlString = photo.comments.map(comment =>
+            generateCommentsHtml(comment)
+        ).join('');
+        commentsHtml.innerHTML = commentsHtmlString;
+    }
+
+    function generatePhotoHtml(photo) {
+        return (
+            `<tr>
+                <td>
+                    <img src="${photo.url}"  style="with:100px;" with="100px" height="auto"/>
+                </td>
+                <td>
+                    Titulo: ${photo.title}
+                    <button value ="${photo.id}" class="btn btn-primary" onclick="fillCommentsSection(this.value)">
+                       Ver Comentarios
+                    </button>
+                </td>
+            `
+            );
+    }
+    function generateCommentsHtml(comment) {
+        return (
+            `<div class="list-group-item>
+                <div class="row">
+                    Nombre: ${comment.name}
+                    Email: ${comment.email}
+                    <p>${comment.body}</p>
+                </div>
+            </div>
+            `
+            )
+    }
+
+</script> 
